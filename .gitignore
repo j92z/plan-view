@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 package-lock.json
 tests/**/coverage/
-.history/
+/.history
 
 # Editor directories and files
 .idea
