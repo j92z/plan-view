@@ -146,13 +146,13 @@
     </el-card>
     <template>
       <el-drawer
-        title="创建新计划"
         direction="rtl"
         destroy-on-close
         :visible.sync="drawer"
+        :with-header="false"
       >
         <template>
-          <el-form ref="form" :model="form" label-width="80px" style="padding: 20px">
+          <el-form ref="form" :model="form" label-width="80px" style="padding: 50px 20px 20px 20px;">
             <el-form-item label="计划名称">
               <el-input v-model="form.name" />
             </el-form-item>

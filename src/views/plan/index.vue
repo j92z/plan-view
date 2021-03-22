@@ -32,13 +32,13 @@
     </template>
     <template>
       <el-drawer
-        title="创建新计划"
         direction="rtl"
         destroy-on-close
         :visible.sync="drawer"
+        :with-header="false"
       >
         <template>
-          <el-form ref="form" :model="form" label-width="80px" style="padding: 20px">
+          <el-form ref="form" :model="form" label-width="80px" style="padding:50px 20px 20px 20px;">
             <el-form-item label="计划名称">
               <el-input v-model="form.name" />
             </el-form-item>
@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { getTree, addPlan, getOnePlan, removePlan, getListByParent } from '@/api/plan'
+import { getTree, addPlan, removePlan, getListByParent } from '@/api/plan'
 
 export default {
   data() {
@@ -94,7 +94,6 @@ export default {
       drawer: false,
       formLoading: false,
       form: {
-        id: '',
         name: '',
         content: '',
         status: 0,
@@ -137,6 +136,14 @@ export default {
         this.formLoading = false
         this.taggleDrawer(false)
         this.fetchListByParent()
+        this.form = {
+          name: '',
+          content: '',
+          status: 0,
+          costTime: 0,
+          sort: 0,
+          parent: []
+        }
       })
       this.formLoading = false
     },
@@ -145,18 +152,6 @@ export default {
         this.fetchPlanList()
       }
       this.drawer = taggle
-    },
-    openPlanDetail(id) {
-      getOnePlan(id).then((response) => {
-        this.form.id = response.data.id
-        this.form.name = response.data.name
-        this.form.content = response.data.content
-        this.form.status = response.data.status
-        this.form.costTime = response.data.costTime
-        this.form.sort = response.data.sort
-        this.form.parent = response.data?.parent !== null ? [response.data.parent.id] : []
-        this.taggleDrawer(true)
-      })
     },
     deletePlan(id) {
       removePlan(id).then(() => {
