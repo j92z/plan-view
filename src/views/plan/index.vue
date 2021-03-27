@@ -16,7 +16,7 @@
                     <span style="font-size: 30px;cursor: pointer" @click="goToDetail(item.id)">{{ item.name }}</span>
                   </el-col>
                   <el-col :span="2" :offset="6" style="font-size: 30px">
-                    <i v-if="item.status===2" class="el-icon-finished" style="color: green;" title="已完成" />
+                    <i v-if="item.status===1" class="el-icon-finished" style="color: green;" title="已完成" />
                     <i v-else-if="item.status===-1" class="el-icon-close" style="color: red" title="失败" />
                     <i v-else class="el-icon-truck" title="进行中" />
                   </el-col>
@@ -51,9 +51,9 @@
             </el-form-item>
             <el-form-item label="计划状态">
               <el-radio-group v-model="form.status">
-                <el-radio :label="0">未开始</el-radio>
-                <el-radio :label="1">进行中</el-radio>
-                <el-radio :label="2">完成</el-radio>
+                <el-radio :label="-1" disabled>失败</el-radio>
+                <el-radio :label="0">进行中</el-radio>
+                <el-radio :label="1">完成</el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item label="耗时/小时">

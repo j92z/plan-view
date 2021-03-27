@@ -76,6 +76,17 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/work',
+    component: Layout,
+    name: 'Work',
+    children: [{
+      path: 'detail/:id',
+      name: 'Detail',
+      hidden: true,
+      component: () => import('@/views/work/detail')
+    }]
+  },
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',
