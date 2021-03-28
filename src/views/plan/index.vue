@@ -7,8 +7,16 @@
     >创建新计划</el-button>
     <template>
       <el-row v-loading="loading" :gutter="12">
-        <el-col v-for="item in planList" :key="item.id" :span="8" style="margin-top: 20px;">
-          <el-card shadow="hover">
+        <el-col
+          v-for="item in planList"
+          :key="item.id"
+          :xl="6"
+          :lg="8"
+          :md="12"
+          :xs="24"
+          style="margin-top: 20px;"
+        >
+          <el-card shadow="hover" style="height: 210px">
             <el-container>
               <el-header height="30px">
                 <el-row>
@@ -22,7 +30,15 @@
                   </el-col>
                 </el-row>
               </el-header>
-              <el-main style="display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 3;overflow: hidden;">
+              <el-main
+                style="
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 6;
+                overflow: hidden;
+                height: 130px;
+                white-space:pre-wrap;"
+              >
                 <span>{{ item.content }}</span>
               </el-main>
             </el-container>
@@ -49,7 +65,7 @@
                 :autosize="{ minRows: 2}"
               />
             </el-form-item>
-            <el-form-item label="计划状态">
+            <!-- <el-form-item label="计划状态">
               <el-radio-group v-model="form.status">
                 <el-radio :label="-1" disabled>失败</el-radio>
                 <el-radio :label="0">进行中</el-radio>
@@ -58,13 +74,13 @@
             </el-form-item>
             <el-form-item label="耗时/小时">
               <el-input-number v-model="form.costTime" :precision="2" :step="0.1" controls-position="right" :max="87600" />
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="计划排序">
               <el-input-number v-model="form.sort" :step="1" step-strictly :max="1000" />
             </el-form-item>
             <el-form-item label="父级计划">
               <el-cascader
-                v-model="form.parent"
+                v-model="form.planCascaderPath"
                 :options="list"
                 :props="{ checkStrictly: true, label: 'name', value: 'id' }"
                 clearable
@@ -96,10 +112,8 @@ export default {
       form: {
         name: '',
         content: '',
-        status: 0,
-        costTime: 0,
         sort: 0,
-        parent: []
+        planCascaderPath: []
       }
     }
   },
@@ -126,8 +140,13 @@ export default {
     },
     addPlan() {
       this.formLoading = true
-      var info = this.form
-      info.parent = this.form.parent.length > 0 ? this.form.parent[0] : []
+      var info = {
+        name: this.form.name,
+        content: this.form.content,
+        sort: this.form.sort,
+        planCascaderPath: this.form.planCascaderPath.join(','),
+        parent: this.form.planCascaderPath.length > 0 ? this.form.planCascaderPath[this.form.planCascaderPath.length - 1] : ''
+      }
       addPlan(info).then(() => {
         this.$message({
           message: '添加成功',
@@ -139,10 +158,8 @@ export default {
         this.form = {
           name: '',
           content: '',
-          status: 0,
-          costTime: 0,
           sort: 0,
-          parent: []
+          planCascaderPath: []
         }
       })
       this.formLoading = false

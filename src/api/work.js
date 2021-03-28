@@ -29,3 +29,31 @@ export function deleteWork(id) {
     method: 'delete'
   })
 }
+
+export function doneWork(id) {
+  return request({
+    url: '/work/done/' + id,
+    method: 'post'
+  })
+}
+
+export function failWork(id) {
+  return request({
+    url: '/work/fail/' + id,
+    method: 'post'
+  })
+}
+
+export function doneWorkItem(id) {
+  return request({
+    url: '/work-item/done/' + id,
+    method: 'post'
+  })
+}
+
+export function failWorkItem(id) {
+  return request({
+    url: '/work-item/fail/' + id,
+    method: 'post'
+  })
+}

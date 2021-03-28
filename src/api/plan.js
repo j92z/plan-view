@@ -53,3 +53,17 @@ export function removePlan(id) {
     method: 'delete'
   })
 }
+
+export function donePlan(id) {
+  return request({
+    url: '/plan/done/' + id,
+    method: 'post'
+  })
+}
+
+export function failPlan(id) {
+  return request({
+    url: '/plan/fail/' + id,
+    method: 'post'
+  })
+}

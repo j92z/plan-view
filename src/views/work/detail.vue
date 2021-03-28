@@ -4,7 +4,7 @@
       <el-container v-loading="loading">
         <el-header style="font-size: 30px">
           <el-row :gutter="20">
-            <el-col :span="8">
+            <el-col :span="16" :xs="24">
               <i
                 class="el-icon-back"
                 title="返回"
@@ -20,19 +20,46 @@
             </el-col>
             <el-col
               v-if="!editorStatus"
-              :span="1"
-              :offset="14"
-              style="font-size: 30px"
+              :span="8"
+              :xs="0"
+              style="font-size: 30px;text-align: end;"
             >
               <span><i
                 class="el-icon-edit"
+                style="cursor: pointer"
                 title="编辑"
                 @click="taggleEditor(true)"
               /></span>
-            </el-col>
-            <el-col v-if="!editorStatus" :span="1" style="font-size: 30px">
+              <el-divider direction="vertical" />
+              <span><i
+                v-if="status === 1"
+                class="el-icon-check"
+                style="cursor: no-drop; color: gray"
+                title="完成"
+              /><i
+                v-else
+                class="el-icon-check"
+                style="cursor: pointer"
+                title="完成"
+                @click="workDone"
+              /></span>
+              <el-divider direction="vertical" />
+              <span><i
+                v-if="status === -1"
+                class="el-icon-close"
+                style="cursor: no-drop; color: gray"
+                title="失败"
+              /><i
+                v-else
+                class="el-icon-close"
+                style="cursor: pointer"
+                title="失败"
+                @click="workFail"
+              /></span>
+              <el-divider direction="vertical" />
               <span><i
                 class="el-icon-delete"
+                style="cursor: pointer"
                 title="删除"
                 @click="deleteWork"
               /></span>
@@ -61,15 +88,15 @@
               </div>
               <div v-else> {{ content }} </div>
             </el-form-item>
-            <el-form-item label="状态">
-              <div v-if="editorStatus">
+            <el-form-item v-if="!editorStatus" label="状态">
+              <!-- <div v-if="editorStatus">
                 <el-radio-group v-model="status">
                   <el-radio :label="-1">失败</el-radio>
                   <el-radio :label="0">进行中</el-radio>
                   <el-radio :label="1">完成</el-radio>
                 </el-radio-group>
-              </div>
-              <span v-else style="font-size: 20px">
+              </div> -->
+              <span style="font-size: 20px">
                 <i
                   v-if="status === 1"
                   class="el-icon-finished"
@@ -192,7 +219,7 @@
               <div v-else style="padding-left: 10px">
                 <div v-if="plan.hasOwnProperty('name')">
                   <el-row :gutter="20">
-                    <el-col :span="8">
+                    <el-col :xl="6" :lg="8" :md="12" :xs="24">
                       <el-card shadow="always">
                         <el-container>
                           <el-header height="30px">
@@ -248,61 +275,85 @@
                   <el-col
                     v-for="item in workItems"
                     :key="item.id"
-                    :span="8"
+                    :xl="6"
+                    :lg="8"
+                    :md="12"
+                    :xs="24"
                     style="margin-bottom: 20px"
                   >
                     <el-card shadow="always" style="height: 210px">
                       <el-container>
-                        <el-header height="30px">
-                          <el-row>
-                            <el-col
-                              :span="22"
-                              style="
+                        <el-container>
+                          <el-header height="30px">
+                            <el-row>
+                              <el-col
+                                :span="22"
+                                style="
                                 white-space: nowrap;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
                               "
-                            >
-                              <span
-                                style="font-size: 30px; cursor: pointer"
                               >
-                                {{ item.date }}
-                              </span>
-                            </el-col>
-                            <el-col :span="2" style="font-size: 30px">
-                              <span style="font-size: 30px">
-                                <i
-                                  v-if="item.status === 1"
-                                  class="el-icon-finished"
-                                  style="color: green"
-                                  title="已完成"
-                                />
-                                <i
-                                  v-else-if="item.status === -1"
-                                  class="el-icon-close"
-                                  style="color: red"
-                                  title="失败"
-                                />
-                                <i
-                                  v-else
-                                  class="el-icon-truck"
-                                  title="进行中"
-                                />
-                              </span>
-                            </el-col>
-                          </el-row>
-                        </el-header>
-                        <el-main
-                          style="
-                            display: -webkit-box;
-                            -webkit-box-orient: vertical;
-                            -webkit-line-clamp: 3;
-                            overflow: hidden;
-                            height: 130px;
-                          "
-                        >
-                          <span>1111</span>
-                        </el-main>
+                                <span
+                                  style="font-size: 30px; cursor: pointer"
+                                >
+                                  {{ item.date }}
+                                </span>
+                              </el-col>
+                            </el-row>
+                          </el-header>
+                          <el-main
+                            style="height: 130px;"
+                          >
+                            <span v-if="item.status === 1" style="font-size: 30px">
+                              已完成 <i
+                                class="el-icon-finished"
+                                style="color: green"
+                                title="已完成"
+                              />
+                            </span>
+                            <span v-else-if="item.status === -1" style="font-size: 30px">
+                              失败 <i
+                                class="el-icon-close"
+                                style="color: red"
+                                title="失败"
+                              />
+                            </span>
+                            <span v-else style="font-size: 30px">
+                              进行中 <i
+                                class="el-icon-truck"
+                                title="进行中"
+                              />
+                            </span>
+                          </el-main>
+                        </el-container>
+                        <el-aside width="40px" style="width: 50px;border-left: 0.5px solid #eee;padding-left: 10px;font-size: 30px">
+                          <span><i
+                            v-if="item.status === 1"
+                            class="el-icon-check"
+                            style="cursor: no-drop; color: gray"
+                            title="完成"
+                          /><i
+                            v-else
+                            class="el-icon-check"
+                            style="cursor: pointer"
+                            title="完成"
+                            @click="workItemDone(item.id)"
+                          /></span>
+                          <el-divider style="margin: 60px 0px" />
+                          <span><i
+                            v-if="item.status === -1"
+                            class="el-icon-close"
+                            style="cursor: no-drop; color: gray"
+                            title="失败"
+                          /><i
+                            v-else
+                            class="el-icon-close"
+                            style="cursor: pointer"
+                            title="失败"
+                            @click="workItemFail(item.id)"
+                          /></span>
+                        </el-aside>
                       </el-container>
                     </el-card>
                   </el-col>
@@ -325,8 +376,9 @@
 </template>
 
 <script>
-import { getOneWork, updateWork, deleteWork } from '@/api/work'
+import { getOneWork, updateWork, deleteWork, doneWorkItem, failWorkItem, doneWork, failWork } from '@/api/work'
 import { getTree } from '@/api/plan'
+import { sortArrayObject } from '@/utils/sort/array'
 
 export default {
   data() {
@@ -383,7 +435,11 @@ export default {
           this.repeatStep = response.data.repeatStep
           this.whichDay = response.data.whichDay
           this.sort = response.data.sort
-          this.workItems = response.data.workItems
+          this.workItems = sortArrayObject(response.data.workItems, (a, b) => {
+            var aValue = new Date(a.date).getTime()
+            var bValue = new Date(b.date).getTime()
+            return aValue > bValue ? 1 : (aValue === bValue ? 0 : -1)
+          })
           this.planCascaderPath = response.data?.planCascaderPath ? response.data.planCascaderPath.split(',') : []
           this.plan = response.data?.plan ? response.data.plan : {}
           this.loading = false
@@ -428,7 +484,7 @@ export default {
       var info = {
         name: this.name,
         content: this.content,
-        status: this.status,
+        // status: this.status,
         repeatType: this.repeatType,
         repeatStep: this.repeatStep,
         whichDay: this.whichDay,
@@ -459,6 +515,42 @@ export default {
         })
         this.goBack()
       }).catch(() => {})
+    },
+    workItemDone(id) {
+      doneWorkItem(id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
+    },
+    workItemFail(id) {
+      failWorkItem(id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
+    },
+    workDone() {
+      doneWork(this.id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
+    },
+    workFail() {
+      failWork(this.id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
     }
   }
 }

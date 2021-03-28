@@ -4,7 +4,7 @@
       <el-container v-loading="loading">
         <el-header style="font-size: 30px">
           <el-row :gutter="20">
-            <el-col :span="8">
+            <el-col :span="16" :xs="24">
               <i
                 class="el-icon-back"
                 title="返回"
@@ -20,21 +20,48 @@
             </el-col>
             <el-col
               v-if="!editorStatus"
-              :span="1"
-              :offset="14"
-              style="font-size: 30px"
+              :span="8"
+              :xs="0"
+              style="font-size: 30px;text-align: end;"
             >
               <span><i
                 class="el-icon-edit"
+                style="cursor: pointer"
                 title="编辑"
                 @click="taggleEditor(true)"
               /></span>
-            </el-col>
-            <el-col v-if="!editorStatus" :span="1" style="font-size: 30px">
+              <el-divider direction="vertical" />
+              <span><i
+                v-if="status === 1"
+                class="el-icon-check"
+                style="cursor: no-drop;color: gray"
+                title="完成"
+              /><i
+                v-else
+                class="el-icon-check"
+                style="cursor: pointer"
+                title="完成"
+                @click="planDone"
+              /></span>
+              <el-divider direction="vertical" />
+              <span><i
+                v-if="status === -1"
+                class="el-icon-close"
+                style="cursor: no-drop;color: gray"
+                title="失败"
+              /><i
+                v-else
+                class="el-icon-close"
+                style="cursor: pointer"
+                title="失败"
+                @click="planFail"
+              /></span>
+              <el-divider direction="vertical" />
               <span
                 v-if="children.length === 0 && works.length === 0"
               ><i
                 class="el-icon-delete"
+                style="cursor: pointer"
                 title="删除"
                 @click="deletePlan(id)"
               /></span>
@@ -43,6 +70,7 @@
                 style="color: gray"
               ><i
                 class="el-icon-delete"
+                style="cursor: no-drop"
                 title="删除"
               /></span>
             </el-col>
@@ -62,19 +90,16 @@
             </el-form-item>
             <el-form-item label="详情">
               <div v-if="editorStatus">
-                <el-input v-model="content" />
+                <el-input
+                  v-model="content"
+                  type="textarea"
+                  :autosize="{ minRows: 2 }"
+                />
               </div>
               <div v-else>{{ content }}</div>
             </el-form-item>
-            <el-form-item label="状态">
-              <div v-if="editorStatus">
-                <el-radio-group v-model="status">
-                  <el-radio :label="-1">失败</el-radio>
-                  <el-radio :label="0">进行中</el-radio>
-                  <el-radio :label="1">完成</el-radio>
-                </el-radio-group>
-              </div>
-              <span v-else style="font-size: 20px">
+            <el-form-item v-if="!editorStatus" label="状态">
+              <span style="font-size: 20px">
                 <i
                   v-if="status === 1"
                   class="el-icon-finished"
@@ -91,8 +116,8 @@
                 ><span style="font-size: 14px">(进行中)</span></i>
               </span>
             </el-form-item>
-            <el-form-item label="耗时/小时">
-              <div v-if="editorStatus">
+            <el-form-item v-if="!editorStatus" label="耗时/小时">
+              <!-- <div v-if="editorStatus">
                 <el-input-number
                   v-model="costTime"
                   :precision="2"
@@ -100,8 +125,8 @@
                   controls-position="right"
                   :max="87600"
                 />
-              </div>
-              <div v-else>{{ costTime }}</div>
+              </div> -->
+              <div>{{ costTime }}</div>
             </el-form-item>
             <el-form-item label="排序">
               <div v-if="editorStatus">
@@ -127,7 +152,7 @@
               <div v-else style="padding-left: 10px">
                 <div v-if="parent.hasOwnProperty('name')">
                   <el-row :gutter="20">
-                    <el-col :span="8">
+                    <el-col :xl="6" :lg="8" :md="12" :xs="24">
                       <el-card shadow="always">
                         <el-container>
                           <el-header height="30px">
@@ -183,7 +208,10 @@
                   <el-col
                     v-for="item in children"
                     :key="item.id"
-                    :span="8"
+                    :xl="6"
+                    :lg="8"
+                    :md="12"
+                    :xs="24"
                     style="margin-bottom: 20px"
                   >
                     <el-card shadow="always" style="height: 210px">
@@ -242,7 +270,7 @@
                       </el-container>
                     </el-card>
                   </el-col>
-                  <el-col :span="8" style="margin-bottom: 20px">
+                  <el-col :xl="6" :lg="8" :md="12" :xs="24" style="margin-bottom: 20px">
                     <el-card
                       shadow="hover"
                       style="height: 210px; cursor: pointer"
@@ -268,7 +296,10 @@
                   <el-col
                     v-for="item in works"
                     :key="item.id"
-                    :span="8"
+                    :xl="6"
+                    :lg="8"
+                    :md="12"
+                    :xs="24"
                     style="margin-bottom: 20px"
                   >
                     <el-card shadow="always" style="height: 210px">
@@ -327,7 +358,7 @@
                       </el-container>
                     </el-card>
                   </el-col>
-                  <el-col :span="8" style="margin-bottom: 20px">
+                  <el-col :xl="6" :lg="8" :md="12" :xs="24" style="margin-bottom: 20px">
                     <el-card
                       shadow="hover"
                       style="height: 210px; cursor: pointer"
@@ -383,14 +414,14 @@
                 :autosize="{ minRows: 2 }"
               />
             </el-form-item>
-            <el-form-item label="计划状态">
+            <!-- <el-form-item label="计划状态">
               <el-radio-group v-model="form.status">
                 <el-radio :label="-1" disabled>失败</el-radio>
                 <el-radio :label="0">进行中</el-radio>
                 <el-radio :label="1">完成</el-radio>
               </el-radio-group>
-            </el-form-item>
-            <el-form-item label="耗时/小时">
+            </el-form-item> -->
+            <!-- <el-form-item label="耗时/小时">
               <el-input-number
                 v-model="form.costTime"
                 :precision="2"
@@ -398,7 +429,7 @@
                 controls-position="right"
                 :max="87600"
               />
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="计划排序">
               <el-input-number
                 v-model="form.sort"
@@ -461,13 +492,13 @@
                 :autosize="{ minRows: 2 }"
               />
             </el-form-item>
-            <el-form-item label="任务状态">
+            <!-- <el-form-item label="任务状态">
               <el-radio-group v-model="workForm.status">
                 <el-radio :label="-1" disabled>失败</el-radio>
                 <el-radio :label="0">进行中</el-radio>
                 <el-radio :label="1">完成</el-radio>
               </el-radio-group>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="重复类型">
               <el-radio-group v-model="workForm.repeatType">
                 <el-radio :label="1">天</el-radio>
@@ -580,9 +611,12 @@ import {
   getOnePlan,
   updatePlan,
   removePlan,
-  getTree
+  getTree,
+  donePlan,
+  failPlan
 } from '@/api/plan'
 import { addWork } from '@/api/work'
+import { sortArrayObject } from '@/utils/sort/array'
 
 export default {
   data() {
@@ -607,15 +641,15 @@ export default {
       form: {
         name: '',
         content: '',
-        status: 0,
-        costTime: 0,
+        // status: 0,
+        // costTime: 0,
         sort: 0,
         planCascaderPath: []
       },
       workForm: {
         name: '',
         content: '',
-        status: 0,
+        // status: 0,
         repeatType: 1,
         repeatStep: 1,
         whichDay: 1,
@@ -653,8 +687,12 @@ export default {
           this.workForm.plan = this.id
           this.planCascaderPath = planCascaderPathData.join(',').split(',')
           this.parent = response.data?.parent ? response.data.parent : {}
-          this.children = response.data?.children?.length > 0 ? response.data.children : []
-          this.works = response.data?.works?.length > 0 ? response.data.works : []
+          this.children = sortArrayObject(response.data?.children?.length > 0 ? response.data.children : [], (a, b) => {
+            return a.sort < b.sort ? 1 : (a.sort === b.sort ? 0 : -1)
+          })
+          this.works = sortArrayObject(response.data?.works?.length > 0 ? response.data.works : [], (a, b) => {
+            return a.sort < b.sort ? 1 : (a.sort === b.sort ? 0 : -1)
+          })
           planCascaderPathData.push(this.id)
           this.form.planCascaderPath = planCascaderPathData
           this.workForm.planCascaderPath = planCascaderPathData
@@ -687,9 +725,9 @@ export default {
       var info = {
         name: this.name,
         content: this.content,
-        status: this.status,
+        // status: this.status,
         sort: this.sort,
-        costTime: this.costTime,
+        // costTime: this.costTime,
         parent: this.planCascaderPath.length > 0 ? this.planCascaderPath[this.planCascaderPath.length - 1] : '',
         planCascaderPath: this.planCascaderPath.join(',')
       }
@@ -731,13 +769,10 @@ export default {
       var info = {
         name: this.form.name,
         content: this.form.content,
-        status: this.form.status,
-        costTime: this.form.costTime,
         sort: this.form.sort,
         planCascaderPath: this.form.planCascaderPath.join(','),
         parent: this.form.planCascaderPath.length > 0 ? this.form.planCascaderPath[this.form.planCascaderPath.length - 1] : ''
       }
-      console.log(info)
       addPlan(info).then(() => {
         this.$message({
           message: '添加成功',
@@ -748,7 +783,7 @@ export default {
         this.form = {
           name: '',
           content: '',
-          status: 0,
+          // status: 0,
           costTime: 0,
           sort: 0,
           planCascaderPath: planCascaderPathData
@@ -782,7 +817,7 @@ export default {
           var info = {
             name: this.workForm.name,
             content: this.workForm.content,
-            status: this.workForm.status,
+            // status: this.workForm.status,
             repeatType: this.workForm.repeatType,
             repeatStep: this.workForm.repeatStep,
             whichDay: this.workForm.whichDay,
@@ -805,7 +840,7 @@ export default {
             this.workForm = {
               name: '',
               content: '',
-              status: 0,
+              // status: 0,
               repeatType: 1,
               repeatStep: 1,
               whichDay: 1,
@@ -820,6 +855,24 @@ export default {
           })
           this.addLoading = false
         }
+      })
+    },
+    planDone() {
+      donePlan(this.id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
+    },
+    planFail() {
+      failPlan(this.id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
       })
     }
   }
