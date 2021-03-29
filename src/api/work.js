@@ -57,3 +57,11 @@ export function failWorkItem(id) {
     method: 'post'
   })
 }
+
+export function workCalendar(params) {
+  return request({
+    url: '/work/collection/date',
+    method: 'get',
+    params
+  })
+}

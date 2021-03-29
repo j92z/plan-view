@@ -46,7 +46,26 @@ export const constantRoutes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/plan'
+    redirect: '/work'
+  },
+  {
+    path: '/work',
+    component: Layout,
+    redirect: '/work/calendar',
+    name: 'Work',
+    children: [
+      {
+        path: 'calendar',
+        name: 'Work Calendar',
+        component: () => import('@/views/work/calendarIndex'),
+        meta: { title: '任务日历', icon: 'el-icon-date' }
+      }, {
+        path: 'detail/:id',
+        name: 'Work Detail',
+        hidden: true,
+        component: () => import('@/views/work/detail'),
+        meta: { title: '任务详情', icon: 'dashboard' }
+      }]
   },
   {
     path: '/plan',
@@ -68,18 +87,6 @@ export const constantRoutes = [
         meta: { title: '计划详情', icon: 'dashboard' }
       }
     ]
-  },
-  {
-    path: '/work',
-    component: Layout,
-    name: 'Work',
-    children: [{
-      path: 'detail/:id',
-      name: 'Work Detail',
-      hidden: true,
-      component: () => import('@/views/work/detail'),
-      meta: { title: '任务详情', icon: 'dashboard' }
-    }]
   },
   // {
   //   path: '/example',
