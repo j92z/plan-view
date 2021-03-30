@@ -53,6 +53,7 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/work/calendar',
     name: 'Work',
+    meta: { title: '任务', icon: 'el-icon-date' },
     children: [
       {
         path: 'calendar',
