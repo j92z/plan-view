@@ -20,12 +20,15 @@ export function getDateList(date = new Date(), weekStart = 1, weekCount = 6) {
   const dateList = []
   for (var i = 0; i < count; i++) {
     var dateObj = new Date(firstDateTimestamp + i * 86400000)
-    var monthString  = (dateObj.getMonth() < 10 ? "0" : "") + dateObj.getMonth().toString()
-    var dateString = (dateObj.getDate() < 10 ? "0" : "") + dateObj.getDate().toString()
+    var monthString = (dateObj.getMonth() < 10 ? '0' : '') + (dateObj.getMonth() + 1).toString()
+    var dateString = (dateObj.getDate() < 10 ? '0' : '') + dateObj.getDate().toString()
     var dateInfo = {
-      date: dateObj,
-      headerTime: monthString + "-" + dateString,
-      fullTime: dateObj.getFullYear().toString() + "-" + monthString + "-" + dateString
+      obj: dateObj,
+      date: dateObj.getDate(),
+      month: dateObj.getMonth(),
+      year: dateObj.getFullYear(),
+      // headerTime: monthString + '-' + dateString,
+      fullTime: dateObj.getFullYear().toString() + '-' + monthString + '-' + dateString
     }
     dateList.push(dateInfo)
   }

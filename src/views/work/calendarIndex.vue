@@ -1,19 +1,5 @@
 <template>
-  <div>
-    <el-calendar v-loading="loading">
-      <template slot="dateCell" slot-scope="{ data }">
-        <p :class="data.isSelected ? 'is-selected' : ''">
-          {{ data.day.split("-").slice(1).join("-") }}
-          {{ data.isSelected ? "✔️" : "" }}
-        </p>
-        <div v-if="calendarList.hasOwnProperty(data.day)">
-          <calendarItem
-            :work-item="calendarList[data.day]"
-            :reload="getCalendarList"
-          />
-        </div>
-      </template>
-    </el-calendar>
+  <el-container v-loading="loading">
     <el-container>
       <el-header
         style="
@@ -24,20 +10,26 @@
         "
       >
         <el-row :gutter="20">
-          <el-col :span="16" style="">
-            {{ date.getFullYear() + " 年 " + date.getMonth() + " 月" }}
+          <el-col :xs="8" :span="4" style="">
+            {{ date.getFullYear() + " 年 " + (date.getMonth() + 1) + " 月" }}
           </el-col>
-          <el-col :span="8" style="text-align: end">
+          <el-col :xs="16" :span="20" style="text-align: end">
             <el-button-group>
               <el-button
                 size="mini"
                 plain
                 icon="el-icon-arrow-left"
+                @click="slideCalendar('prev')"
               >上一月</el-button>
-              <el-button size="mini" plain>今天</el-button>
               <el-button
                 size="mini"
                 plain
+                @click="slideCalendar('now')"
+              >今天</el-button>
+              <el-button
+                size="mini"
+                plain
+                @click="slideCalendar('next')"
               >下一月<i
                 class="el-icon-arrow-right el-icon--right"
               /></el-button>
@@ -46,74 +38,147 @@
         </el-row>
       </el-header>
       <el-main>
-        <template>
-          <div
-            v-for="(day, index) in weekList"
-            :key="index + 'day'"
-            style="width: 14.28%; display: inline-block; text-align: center"
-          >
-            <div>{{ day }}</div>
-          </div>
-        </template>
-        <template>
-          <div style="border-right: 1px solid #ebeef5;border-bottom: 1px solid #ebeef5;">
-            <div
-              v-for="(calendar, index) in dateList"
-              :key="index + 'calendar'"
-              style="
-                width: 14.28%;
-                display: inline-block;
-                border-top: 1px solid #ebeef5;
-                border-left: 1px solid #ebeef5;
-              "
-            >
-              <div :style="{height: height + 'px'}" class="calendar-item">
-                <el-container>
-                  <el-header>{{ calendar.headerTime }}</el-header>
-                  <el-main>
-                    <div v-if="calendarList.hasOwnProperty(calendar.fullTime)">
-                      <div>
-                        <div v-for="(item, index) in calendarList[calendar.fullTime]" :key="index + 'calendar-list'">
-                          {{ item.work.name}}
-                        </div>
-                      </div>
-                    </div>
-                  </el-main>
-                </el-container>
+        <el-container>
+          <el-header style="height: 30px; line-height: 20px; padding-top: 10px">
+            <template>
+              <div
+                v-for="(day, index) in weekList"
+                :key="index + 'day'"
+                class="week-item"
+              >
+                <div>{{ day }}</div>
               </div>
-            </div>
-          </div>
-        </template>
+            </template>
+          </el-header>
+          <el-main style="padding-top: 10px">
+            <template>
+              <div
+                style="
+                  border-right: 1px solid #ebeef5;
+                  border-bottom: 1px solid #ebeef5;
+                "
+              >
+                <div
+                  v-for="(calendar, index) in dateList"
+                  :key="index + 'calendar'"
+                  :class="{
+                    'calendar-item': true,
+                    'calendar-select': selectDate === calendar.fullTime,
+                    'calendar-outrange': date.getMonth() !== calendar.month,
+                  }"
+                >
+                  <div
+                    :style="{ height: height + 'px' }"
+                    @click="slideCalendar(calendar.fullTime)"
+                  >
+                    <el-container>
+                      <el-header class="calendar-item-header">
+                        <div>{{ calendar.date }}</div>
+                      </el-header>
+                      <el-main style="padding: 10px 20px">
+                        <div
+                          v-if="calendarList.hasOwnProperty(calendar.fullTime)"
+                        >
+                          <div>
+                            <div
+                              v-for="(item, cIndex) in calendarList[
+                                calendar.fullTime
+                              ]"
+                              :key="cIndex + 'calendar-list'"
+                            >
+                              <i
+                                v-if="item.status === 1"
+                                class="el-icon-check"
+                                style="color: green"
+                              />
+                              <i
+                                v-if="item.status === 0"
+                                class="el-icon-s-promotion"
+                              />
+                              <i
+                                v-else-if="item.status === -1"
+                                class="el-icon-close"
+                                style="color: red"
+                              />
+                              {{ item.work.name }} ({{
+                                item.dayWorkStartTime +
+                                  "~" +
+                                  item.dayWorkEndTime
+                              }})
+                            </div>
+                          </div>
+                        </div>
+                      </el-main>
+                    </el-container>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </el-main>
+        </el-container>
       </el-main>
     </el-container>
-  </div>
+    <el-aside :width="asideShow ? '30%' : '0px'" class="aside-table">
+      <template>
+        <el-table :data="asideData" style="width: 100%">
+          <el-table-column label="名称" width="180">
+            <template slot-scope="scope">
+              <i class="el-icon-time" />
+              <span style="margin-left: 10px">{{ scope.row.work.name }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="状态" width="180">
+            <template slot-scope="scope">
+              <i class="el-icon-time" />
+              <span style="margin-left: 10px">{{ scope.row.status }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="">
+              <el-button
+                size="mini"
+              >编辑</el-button>
+              <el-button
+                size="mini"
+                type="danger"
+              >删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </template>
+    </el-aside>
+  </el-container>
 </template>
 
 <script>
 import { workCalendar } from '@/api/work'
-import calendarItem from './components/calendarItem'
+// import calendarItem from './components/calendarItem'
 import { getDateList } from '@/utils/date/calendar'
 export default {
-  components: {
-    calendarItem
-  },
+  // components: {
+  //   calendarItem
+  // },
   data() {
     return {
       calendarList: [],
       loading: false,
       date: new Date(),
+      selectDate: Object,
       month: 1,
-      weekStart: 0,
+      weekStart: 1,
       weekList: [], // ['日', '月', '火', '水', '木', '金', '土']
       dateList: [],
-      height: 200
+      height: 200,
+      asideData: [],
+      asideShow: false
     }
   },
   created() {
     this.month = this.date.getMonth()
     this.formatWeek(this.weekStart)
-    this.formatDate(this.date)
+    this.formatDate(this.date, this.weekStart)
     this.getCalendarList()
+    this.setSelcetDate(this.date, true)
   },
   methods: {
     getCalendarList() {
@@ -134,8 +199,72 @@ export default {
       }
       this.weekList = newWeekList
     },
-    formatDate(date = new Date()) {
-      this.dateList = getDateList(date)
+    formatDate(date = new Date(), start = 0) {
+      this.dateList = getDateList(date, start)
+    },
+    slideCalendar(command = 'now') {
+      var year = this.date.getFullYear()
+      var month = this.date.getMonth()
+      switch (command) {
+        case 'prev':
+          var prevMonth = month - 1
+          var prevYear = year
+          if (month === 0) {
+            prevMonth = 12
+            prevYear = year - 1
+          }
+          this.date = new Date(prevYear, prevMonth)
+          this.formatDate(this.date, this.weekStart)
+          this.setSelcetDate(this.date)
+          break
+        case 'now':
+          var newDate = new Date()
+          if (
+            newDate.getMonth() !== this.date.getMonth() ||
+            newDate.getFullYear() !== this.date.getFullYear()
+          ) {
+            this.date = newDate
+            this.formatDate(this.date, this.weekStart)
+          }
+          this.setSelcetDate(this.date)
+          break
+        case 'next':
+          var nextMonth = month + 1
+          var nextYear = year
+          if (month === 11) {
+            nextMonth = 0
+            nextYear = year + 1
+          }
+          this.date = new Date(nextYear, nextMonth)
+          this.formatDate(this.date, this.weekStart)
+          this.setSelcetDate(this.date)
+          break
+        default:
+          var clickDate = new Date(command.replace(/-/g, '/'))
+          if (!(clickDate instanceof Date)) {
+            throw new Error('传入时间格式有误')
+          }
+          if (
+            clickDate.getMonth() !== this.date.getMonth() ||
+            clickDate.getFullYear() !== this.date.getFullYear()
+          ) {
+            this.date = clickDate
+            this.formatDate(this.date, this.weekStart)
+          }
+          this.setSelcetDate(clickDate)
+          break
+      }
+    },
+    setSelcetDate(date = new Date(), init = false) {
+      const newSelectDate = date.getFullYear().toString() + '-' + (date.getMonth() < 10 ? '0' : '') + (date.getMonth() + 1).toString() + '-' + (date.getDate() < 10 ? '0' : '') + date.getDate().toString()
+      init || this.taggleAside(newSelectDate !== this.selectDate || (newSelectDate === this.selectDate && this.asideShow === false), newSelectDate)
+      this.selectDate = newSelectDate
+    },
+    taggleAside(taggle = true, newSelectDate) {
+      if (taggle) {
+        this.asideData = this.calendarList[newSelectDate] !== undefined ? this.calendarList[newSelectDate] : []
+      }
+      this.asideShow = taggle
     }
   }
 }
@@ -143,7 +272,37 @@ export default {
 
 <style lang="scss" scoped>
 .calendar-item {
-  padding: 8px;
+  width: 14.28%;
+  display: inline-block;
+  border-top: 1px solid #ebeef5;
+  border-left: 1px solid #ebeef5;
+  :hover {
+    background-color: #f2f8fe;
+  }
+  .calendar-item-header {
+    height: 30px !important;
+    line-height: 20px;
+    padding-top: 10px;
+  }
+}
+.calendar-select {
+  background-color: #f2f8fe;
+  color: #1989fa;
+  // .calendar-item-header{
+
+  // }
+}
+.calendar-outrange {
+  color: #c0c4cc;
+}
+.week-item {
+  width: 14.28%;
+  display: inline-block;
+  text-align: center;
+}
+.aside-table {
+  border-left: 1px solid #ebeef5;
+  padding: 20px;
 }
 </style>
 
