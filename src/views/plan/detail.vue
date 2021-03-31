@@ -57,21 +57,11 @@
                 @click="planFail"
               /></span>
               <el-divider direction="vertical" />
-              <span
-                v-if="children.length === 0 && works.length === 0"
-              ><i
+              <span><i
                 class="el-icon-delete"
                 style="cursor: pointer"
                 title="删除"
                 @click="deletePlan(id)"
-              /></span>
-              <span
-                v-else
-                style="color: gray"
-              ><i
-                class="el-icon-delete"
-                style="cursor: no-drop"
-                title="删除"
               /></span>
             </el-col>
           </el-row>
@@ -348,7 +338,7 @@
                           </el-main>
                         </el-container>
                         <el-aside width="40px" style="width: 50px;border-left: 0.5px solid #eee;padding-left: 10px;font-size: 30px">
-                          <span><i
+                          <span class="work-aside-action"><i
                             v-if="item.status === 1"
                             class="el-icon-check"
                             style="cursor: no-drop; color: gray"
@@ -360,8 +350,7 @@
                             title="完成"
                             @click="workItemDone(item.id)"
                           /></span>
-                          <el-divider style="margin: 60px 0px" />
-                          <span><i
+                          <span class="work-aside-action"><i
                             v-if="item.status === -1"
                             class="el-icon-close"
                             style="cursor: no-drop; color: gray"
@@ -373,6 +362,13 @@
                             title="失败"
                             @click="workItemFail(item.id)"
                           /></span>
+                          <span>
+                            <i
+                              class="el-icon-delete"
+                              title="删除"
+                              @click="workItemRemove(item.id)"
+                            />
+                          </span>
                         </el-aside>
                       </el-container>
                     </el-card>
@@ -630,7 +626,7 @@ import {
   donePlan,
   failPlan
 } from '@/api/plan'
-import { createWorkCollection, createOneWork, getWorkItemList, doneWorkItem, failWorkItem } from '@/api/work'
+import { createWorkCollection, createOneWork, getWorkItemList, doneWorkItem, failWorkItem, removeWorkItem } from '@/api/work'
 import { sortArrayObject } from '@/utils/sort/array'
 
 export default {
@@ -876,7 +872,7 @@ export default {
               sort: 0,
               planCascaderPath: planCascaderPath
             }
-            this.$refs['workForm'].clearValidate()
+            this.$refs['workForm'].resetFields()
             this.addLoading = false
             this.taggleWorkDrawer(false)
             this.getInfo()
@@ -926,7 +922,7 @@ export default {
               sort: 0,
               planCascaderPath: planCascaderPath
             }
-            this.$refs['workForm'].clearValidate()
+            this.$refs['workForm'].resetFields()
             this.addLoading = false
             this.taggleWorkDrawer(false)
             this.getInfo()
@@ -970,6 +966,15 @@ export default {
         })
         this.getInfo()
       })
+    },
+    workItemRemove(id) {
+      removeWorkItem(id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
     }
   }
 }
@@ -981,5 +986,8 @@ export default {
   :hover {
     color: #409EFF;
   }
+}
+.work-aside-action {
+  border-bottom: 1px solid #6b6d72;
 }
 </style>

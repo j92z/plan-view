@@ -66,6 +66,13 @@ export function failWorkItem(id) {
   })
 }
 
+export function removeWorkItem(id) {
+  return request({
+    url: '/work-item/' + id,
+    method: 'delete'
+  })
+}
+
 export function workCalendar(params) {
   return request({
     url: '/work/collection/date',

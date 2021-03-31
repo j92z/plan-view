@@ -126,20 +126,40 @@
               <span style="margin-left: 10px">{{ scope.row.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="状态" width="60">
+          <el-table-column label="时间" width="180">
             <template slot-scope="scope">
-              <span style="margin-left: 10px">{{ scope.row.status }}</span>
+              <i class="el-icon-time" />
+              {{
+                formatWorkItemTime(scope.row.dayWorkStartTime) +
+                  "~" +
+                  formatWorkItemTime(scope.row.dayWorkEndTime)
+              }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="160">
-            <template slot-scope="">
-              <el-button
+          <el-table-column label="状态" width="80">
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.status === 1" type="success">完成</el-tag>
+              <el-tag v-else-if="scope.row.status === 0" type="info">未完成</el-tag>
+              <el-tag v-else-if="scope.row.status === -1" type="danger">失败</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="60">
+            <template slot-scope="scope">
+              <!-- <el-button
                 size="mini"
-              >编辑</el-button>
-              <el-button
+                :disabled="scope.row.status === 1"
+                @click="workItemDone(scope.row.id)"
+              >完成</el-button> -->
+              <span style="font-size: 30px">
+                <i v-if="scope.row.status !== 1" class="el-icon-check" style="color: green;cursor: pointer" @click="workItemDone(scope.row.id)" />
+                <i v-else class="el-icon-check" style="color: gray;cursor: no-drop" />
+              </span>
+              <!-- <el-button
                 size="mini"
                 type="danger"
-              >删除</el-button>
+                :disabled="scope.row.status === -1"
+                @click="workItemFail(scope.row.id)"
+              >失败</el-button> -->
             </template>
           </el-table-column>
         </el-table>
@@ -149,7 +169,7 @@
 </template>
 
 <script>
-import { workCalendar } from '@/api/work'
+import { workCalendar, doneWorkItem, failWorkItem } from '@/api/work'
 // import calendarItem from './components/calendarItem'
 import { getDateList } from '@/utils/date/calendar'
 import { parseTime } from '@/utils/index'
@@ -181,11 +201,14 @@ export default {
     this.setSelcetDate(this.date, true)
   },
   methods: {
-    getCalendarList() {
+    getCalendarList(setAside = false) {
       this.loading = true
       workCalendar({}).then((response) => {
         this.calendarList = response.data
         this.loading = false
+        if (setAside) {
+          this.asideData = this.calendarList[this.selectDate]
+        }
       })
     },
     formatWeek(start = 0) {
@@ -271,6 +294,24 @@ export default {
     },
     formatWorkItemTime(time, format = '{h}:{i}:{s}') {
       return parseTime(time, format)
+    },
+    workItemDone(id) {
+      doneWorkItem(id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getCalendarList(true)
+      })
+    },
+    workItemFail(id) {
+      failWorkItem(id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getCalendarList(true)
+      })
     }
   }
 }
