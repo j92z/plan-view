@@ -1,8 +1,16 @@
 import request from '@/utils/request'
 
-export function addWork(data) {
+export function createWorkCollection(data) {
   return request({
     url: '/work',
+    method: 'post',
+    data
+  })
+}
+
+export function createOneWork(data) {
+  return request({
+    url: '/work-item',
     method: 'post',
     data
   })
@@ -63,5 +71,12 @@ export function workCalendar(params) {
     url: '/work/collection/date',
     method: 'get',
     params
+  })
+}
+
+export function getWorkItemList(id) {
+  return request({
+    url: '/work-item/plan/' + id,
+    method: 'get'
   })
 }

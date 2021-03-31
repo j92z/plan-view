@@ -116,18 +116,9 @@
                 ><span style="font-size: 14px">(进行中)</span></i>
               </span>
             </el-form-item>
-            <el-form-item v-if="!editorStatus" label="耗时/小时">
-              <!-- <div v-if="editorStatus">
-                <el-input-number
-                  v-model="costTime"
-                  :precision="2"
-                  :step="0.1"
-                  controls-position="right"
-                  :max="87600"
-                />
-              </div> -->
+            <!-- <el-form-item v-if="!editorStatus" label="耗时/小时">
               <div>{{ costTime }}</div>
-            </el-form-item>
+            </el-form-item> -->
             <el-form-item label="排序">
               <div v-if="editorStatus">
                 <el-input-number
@@ -291,7 +282,7 @@
               </div>
             </el-form-item>
             <el-form-item v-if="!editorStatus" label="任务">
-              <div style="padding-left: 10px">
+              <div v-loading="workListLoading" style="padding-left: 10px">
                 <el-row :gutter="20">
                   <el-col
                     v-for="item in works"
@@ -304,57 +295,85 @@
                   >
                     <el-card shadow="always" style="height: 210px">
                       <el-container>
-                        <el-header height="30px">
-                          <el-row>
-                            <el-col
-                              :span="22"
-                              style="
+                        <el-container>
+                          <el-header height="30px">
+                            <el-row>
+                              <el-col
+                                :span="22"
+                                style="
                                 white-space: nowrap;
                                 overflow: hidden;
                                 text-overflow: ellipsis;
                               "
-                            >
-                              <span
-                                style="font-size: 30px; cursor: pointer"
-                                @click="goToWorkDetail(item.id)"
                               >
-                                {{ item.name }}
-                              </span>
-                            </el-col>
-                            <el-col :span="2" style="font-size: 30px">
-                              <span style="font-size: 30px">
-                                <i
-                                  v-if="item.status === 1"
-                                  class="el-icon-finished"
-                                  style="color: green"
-                                  title="已完成"
-                                />
-                                <i
-                                  v-else-if="item.status === -1"
-                                  class="el-icon-close"
-                                  style="color: red"
-                                  title="失败"
-                                />
-                                <i
-                                  v-else
-                                  class="el-icon-truck"
-                                  title="进行中"
-                                />
-                              </span>
-                            </el-col>
-                          </el-row>
-                        </el-header>
-                        <el-main
-                          style="
+                                <span
+                                  style="font-size: 30px;"
+                                >
+                                  {{ item.name }} <i v-if="item.work" class="el-icon-collection work-collection-icon" @click="goToWorkDetail(item.work.id)" />
+                                </span>
+                              </el-col>
+                              <el-col :span="2" style="font-size: 30px">
+                                <span style="font-size: 30px">
+                                  <i
+                                    v-if="item.status === 1"
+                                    class="el-icon-finished"
+                                    style="color: green"
+                                    title="已完成"
+                                  />
+                                  <i
+                                    v-else-if="item.status === -1"
+                                    class="el-icon-close"
+                                    style="color: red"
+                                    title="失败"
+                                  />
+                                  <i
+                                    v-else
+                                    class="el-icon-truck"
+                                    title="进行中"
+                                  />
+                                </span>
+                              </el-col>
+                            </el-row>
+                          </el-header>
+                          <el-main
+                            style="
                             display: -webkit-box;
                             -webkit-box-orient: vertical;
                             -webkit-line-clamp: 3;
                             overflow: hidden;
                             height: 130px;
                           "
-                        >
-                          <span>{{ item.content }}</span>
-                        </el-main>
+                          >
+                            <span>{{ item.content }}</span>
+                          </el-main>
+                        </el-container>
+                        <el-aside width="40px" style="width: 50px;border-left: 0.5px solid #eee;padding-left: 10px;font-size: 30px">
+                          <span><i
+                            v-if="item.status === 1"
+                            class="el-icon-check"
+                            style="cursor: no-drop; color: gray"
+                            title="完成"
+                          /><i
+                            v-else
+                            class="el-icon-check"
+                            style="cursor: pointer"
+                            title="完成"
+                            @click="workItemDone(item.id)"
+                          /></span>
+                          <el-divider style="margin: 60px 0px" />
+                          <span><i
+                            v-if="item.status === -1"
+                            class="el-icon-close"
+                            style="cursor: no-drop; color: gray"
+                            title="失败"
+                          /><i
+                            v-else
+                            class="el-icon-close"
+                            style="cursor: pointer"
+                            title="失败"
+                            @click="workItemFail(item.id)"
+                          /></span>
+                        </el-aside>
                       </el-container>
                     </el-card>
                   </el-col>
@@ -414,22 +433,6 @@
                 :autosize="{ minRows: 2 }"
               />
             </el-form-item>
-            <!-- <el-form-item label="计划状态">
-              <el-radio-group v-model="form.status">
-                <el-radio :label="-1" disabled>失败</el-radio>
-                <el-radio :label="0">进行中</el-radio>
-                <el-radio :label="1">完成</el-radio>
-              </el-radio-group>
-            </el-form-item> -->
-            <!-- <el-form-item label="耗时/小时">
-              <el-input-number
-                v-model="form.costTime"
-                :precision="2"
-                :step="0.1"
-                controls-position="right"
-                :max="87600"
-              />
-            </el-form-item> -->
             <el-form-item label="计划排序">
               <el-input-number
                 v-model="form.sort"
@@ -468,11 +471,18 @@
         :with-header="false"
       >
         <template>
+          <div style="padding: 20px;text-align: center; border-bottom: 1px solid #ebeef5">
+            <el-switch
+              v-model="workAddType"
+              active-text="工作集合"
+              inactive-text="单独工作"
+            />
+          </div>
           <el-form
             ref="workForm"
             :model="workForm"
             label-width="80px"
-            style="padding: 50px 20px 20px 20px"
+            style="padding: 20px"
           >
             <el-form-item
               label="任务名称"
@@ -492,14 +502,7 @@
                 :autosize="{ minRows: 2 }"
               />
             </el-form-item>
-            <!-- <el-form-item label="任务状态">
-              <el-radio-group v-model="workForm.status">
-                <el-radio :label="-1" disabled>失败</el-radio>
-                <el-radio :label="0">进行中</el-radio>
-                <el-radio :label="1">完成</el-radio>
-              </el-radio-group>
-            </el-form-item> -->
-            <el-form-item label="重复类型">
+            <el-form-item v-if="workAddType" label="重复类型">
               <el-radio-group v-model="workForm.repeatType">
                 <el-radio :label="1">天</el-radio>
                 <el-radio :label="2">周</el-radio>
@@ -507,7 +510,7 @@
                 <el-radio :label="4">年</el-radio>
               </el-radio-group>
             </el-form-item>
-            <el-form-item label="重复步进">
+            <el-form-item v-if="workAddType" label="重复步进">
               <el-input-number
                 v-model="workForm.repeatStep"
                 :step="1"
@@ -515,7 +518,7 @@
                 :min="1"
               />
             </el-form-item>
-            <el-form-item v-if="workForm.repeatType !== 1" label="设置某天">
+            <el-form-item v-if="workForm.repeatType !== 1 && workAddType" label="设置某天">
               <el-input-number
                 v-if="workForm.repeatType === 2"
                 v-model="workForm.whichDay"
@@ -542,22 +545,7 @@
               />
             </el-form-item>
             <el-form-item
-              label="始末时间"
-              :rules="[{ required: true, message: '始末时间不可为空' }]"
-              prop="timeRange"
-            >
-              <template>
-                <el-time-picker
-                  v-model="workForm.timeRange"
-                  is-range
-                  range-separator="至"
-                  start-placeholder="开始时间"
-                  end-placeholder="结束时间"
-                  placeholder="选择时间范围"
-                />
-              </template>
-            </el-form-item>
-            <el-form-item
+              v-if="workAddType"
               label="始末日期"
               :rules="[{ required: true, message: '始末日期不可为空' }]"
               prop="dateRange"
@@ -569,6 +557,33 @@
                   range-separator="至"
                   start-placeholder="开始日期"
                   end-placeholder="结束日期"
+                />
+              </template>
+            </el-form-item>
+            <el-form-item
+              v-else
+              label="工作日期"
+              :rules="[{ required: true, message: '工作日期不可为空' }]"
+            >
+              <el-date-picker
+                v-model="workForm.date"
+                type="date"
+                placeholder="选择日期"
+              />
+            </el-form-item>
+            <el-form-item
+              label="工作时间"
+              :rules="[{ required: true, message: '工作时间不可为空' }]"
+              prop="timeRange"
+            >
+              <template>
+                <el-time-picker
+                  v-model="workForm.timeRange"
+                  is-range
+                  range-separator="至"
+                  start-placeholder="开始时间"
+                  end-placeholder="结束时间"
+                  placeholder="选择时间范围"
                 />
               </template>
             </el-form-item>
@@ -594,7 +609,7 @@
               <el-button
                 :loading="addLoading"
                 type="primary"
-                @click="addWork"
+                @click="workAddType ? addWorkCollection() : addOneWork()"
               >立即创建</el-button>
               <el-button @click="taggleWorkDrawer(false)">取消</el-button>
             </el-form-item>
@@ -615,7 +630,7 @@ import {
   donePlan,
   failPlan
 } from '@/api/plan'
-import { addWork } from '@/api/work'
+import { createWorkCollection, createOneWork, getWorkItemList, doneWorkItem, failWorkItem } from '@/api/work'
 import { sortArrayObject } from '@/utils/sort/array'
 
 export default {
@@ -635,6 +650,8 @@ export default {
       treeList: [],
       editorLoading: false,
       loading: false,
+      workListLoading: false,
+      workAddType: false,
       addLoading: false,
       drawer: false,
       workDrawer: false,
@@ -654,6 +671,7 @@ export default {
         repeatStep: 1,
         whichDay: 1,
         timeRange: '',
+        date: '',
         dateRange: '',
         sort: 0,
         planCascaderPath: []
@@ -690,13 +708,14 @@ export default {
           this.children = sortArrayObject(response.data?.children?.length > 0 ? response.data.children : [], (a, b) => {
             return a.sort < b.sort ? 1 : (a.sort === b.sort ? 0 : -1)
           })
-          this.works = sortArrayObject(response.data?.works?.length > 0 ? response.data.works : [], (a, b) => {
-            return a.sort < b.sort ? 1 : (a.sort === b.sort ? 0 : -1)
-          })
+          // this.works = sortArrayObject(response.data?.works?.length > 0 ? response.data.works : [], (a, b) => {
+          //   return a.sort < b.sort ? 1 : (a.sort === b.sort ? 0 : -1)
+          // })
           planCascaderPathData.push(this.id)
           this.form.planCascaderPath = planCascaderPathData
           this.workForm.planCascaderPath = planCascaderPathData
           this.loading = false
+          this.fetchWorkList()
         })
         .catch((err) => {
           this.$message.error('发生错误:' + err)
@@ -708,6 +727,13 @@ export default {
     },
     goToWorkDetail(id) {
       this.$router.push({ path: '/work/detail/' + id })
+    },
+    fetchWorkList() {
+      this.workListLoading = true
+      getWorkItemList(this.id).then((response) => {
+        this.works = response.data
+        this.workListLoading = false
+      })
     },
     fetchPlanList() {
       getTree().then((response) => {
@@ -794,7 +820,7 @@ export default {
       })
       this.addLoading = false
     },
-    addWork() {
+    addWorkCollection() {
       this.$refs['workForm'].validate((valid) => {
         if (valid) {
           this.addLoading = true
@@ -808,12 +834,12 @@ export default {
           )
           const dayWorkStartTime = this.workForm.timeRange[0]
           const dayWorkEndTime = this.workForm.timeRange[1]
-          dayWorkStartTime.setMinutes(
-            dayWorkStartTime.getMinutes() - dayWorkStartTime.getTimezoneOffset()
-          )
-          dayWorkEndTime.setMinutes(
-            dayWorkEndTime.getMinutes() - dayWorkEndTime.getTimezoneOffset()
-          )
+          // dayWorkStartTime.setMinutes(
+          //   dayWorkStartTime.getMinutes() - dayWorkStartTime.getTimezoneOffset()
+          // )
+          // dayWorkEndTime.setMinutes(
+          //   dayWorkEndTime.getMinutes() - dayWorkEndTime.getTimezoneOffset()
+          // )
           var info = {
             name: this.workForm.name,
             content: this.workForm.content,
@@ -824,13 +850,13 @@ export default {
             startDate: startDate.toJSON().substr(0, 10),
             endDate: endDate.toJSON().substr(0, 10),
             dayWorkStartTime:
-              (dayWorkStartTime.getTime() / 1000) % 86400,
+              (dayWorkStartTime.getTime()) % 86400000,
             dayWorkEndTime:
-              (dayWorkEndTime.getTime() / 1000) % 86400,
+              (dayWorkEndTime.getTime()) % 86400000,
             sort: this.workForm.sort,
-            plan: this.id
+            planId: this.id
           }
-          addWork(info).then(() => {
+          createWorkCollection(info).then(() => {
             this.$message({
               message: '添加成功',
               type: 'success'
@@ -845,10 +871,62 @@ export default {
               repeatStep: 1,
               whichDay: 1,
               timeRange: '',
+              date: '',
               dateRange: '',
               sort: 0,
               planCascaderPath: planCascaderPath
             }
+            this.$refs['workForm'].clearValidate()
+            this.addLoading = false
+            this.taggleWorkDrawer(false)
+            this.getInfo()
+          })
+          this.addLoading = false
+        }
+      })
+    },
+    addOneWork() {
+      this.$refs['workForm'].validate((valid) => {
+        if (valid) {
+          this.addLoading = true
+          const workDate = this.workForm.date
+          workDate.setMinutes(
+            workDate.getMinutes() - workDate.getTimezoneOffset()
+          )
+          const dayWorkStartTime = this.workForm.timeRange[0]
+          const dayWorkEndTime = this.workForm.timeRange[1]
+          var info = {
+            name: this.workForm.name,
+            content: this.workForm.content,
+            date: workDate.toJSON().substr(0, 10),
+            dayWorkStartTime:
+              (dayWorkStartTime.getTime()) % 86400000,
+            dayWorkEndTime:
+              (dayWorkEndTime.getTime()) % 86400000,
+            sort: this.workForm.sort,
+            planId: this.id
+          }
+          createOneWork(info).then(() => {
+            this.$message({
+              message: '添加成功',
+              type: 'success'
+            })
+            var planCascaderPath = this.planCascaderPath
+            planCascaderPath.push(this.id)
+            this.workForm = {
+              name: '',
+              content: '',
+              // status: 0,
+              repeatType: 1,
+              repeatStep: 1,
+              whichDay: 1,
+              timeRange: '',
+              date: '',
+              dateRange: '',
+              sort: 0,
+              planCascaderPath: planCascaderPath
+            }
+            this.$refs['workForm'].clearValidate()
             this.addLoading = false
             this.taggleWorkDrawer(false)
             this.getInfo()
@@ -874,7 +952,34 @@ export default {
         })
         this.getInfo()
       })
+    },
+    workItemDone(id) {
+      doneWorkItem(id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
+    },
+    workItemFail(id) {
+      failWorkItem(id).then(() => {
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        })
+        this.getInfo()
+      })
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.work-collection-icon {
+  cursor: pointer;
+  :hover {
+    color: #409EFF;
+  }
+}
+</style>

@@ -100,10 +100,10 @@
                                 class="el-icon-close"
                                 style="color: red"
                               />
-                              {{ item.work.name }} ({{
-                                item.dayWorkStartTime +
+                              {{ item.name }} ({{
+                                formatWorkItemTime(item.dayWorkStartTime) +
                                   "~" +
-                                  item.dayWorkEndTime
+                                  formatWorkItemTime(item.dayWorkEndTime)
                               }})
                             </div>
                           </div>
@@ -121,19 +121,17 @@
     <el-aside :width="asideShow ? '30%' : '0px'" class="aside-table">
       <template>
         <el-table :data="asideData" style="width: 100%">
-          <el-table-column label="名称" width="180">
+          <el-table-column label="名称">
             <template slot-scope="scope">
-              <i class="el-icon-time" />
-              <span style="margin-left: 10px">{{ scope.row.work.name }}</span>
+              <span style="margin-left: 10px">{{ scope.row.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="状态" width="180">
+          <el-table-column label="状态" width="60">
             <template slot-scope="scope">
-              <i class="el-icon-time" />
               <span style="margin-left: 10px">{{ scope.row.status }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作">
+          <el-table-column label="操作" width="160">
             <template slot-scope="">
               <el-button
                 size="mini"
@@ -154,6 +152,8 @@
 import { workCalendar } from '@/api/work'
 // import calendarItem from './components/calendarItem'
 import { getDateList } from '@/utils/date/calendar'
+import { parseTime } from '@/utils/index'
+
 export default {
   // components: {
   //   calendarItem
@@ -216,6 +216,7 @@ export default {
           this.date = new Date(prevYear, prevMonth)
           this.formatDate(this.date, this.weekStart)
           this.setSelcetDate(this.date)
+          this.taggleAside(false)
           break
         case 'now':
           var newDate = new Date()
@@ -227,6 +228,7 @@ export default {
             this.formatDate(this.date, this.weekStart)
           }
           this.setSelcetDate(this.date)
+          this.taggleAside(false)
           break
         case 'next':
           var nextMonth = month + 1
@@ -238,6 +240,7 @@ export default {
           this.date = new Date(nextYear, nextMonth)
           this.formatDate(this.date, this.weekStart)
           this.setSelcetDate(this.date)
+          this.taggleAside(false)
           break
         default:
           var clickDate = new Date(command.replace(/-/g, '/'))
@@ -260,11 +263,14 @@ export default {
       init || this.taggleAside(newSelectDate !== this.selectDate || (newSelectDate === this.selectDate && this.asideShow === false), newSelectDate)
       this.selectDate = newSelectDate
     },
-    taggleAside(taggle = true, newSelectDate) {
-      if (taggle) {
+    taggleAside(taggle = true, newSelectDate = null) {
+      if (taggle && newSelectDate) {
         this.asideData = this.calendarList[newSelectDate] !== undefined ? this.calendarList[newSelectDate] : []
       }
       this.asideShow = taggle
+    },
+    formatWorkItemTime(time, format = '{h}:{i}:{s}') {
+      return parseTime(time, format)
     }
   }
 }
